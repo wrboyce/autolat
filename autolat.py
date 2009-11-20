@@ -158,7 +158,7 @@ class Google(WebService):
             'cts': ('%s00' % time.mktime(date.timetuple())).replace('.', ''), # biggest. hack. ever.
             'lat': '%s' % lat,
             'lng': '%s' % lng,
-            'accuracy': accuracy,
+            'accuracy': '%s' % accuracy,
         }
         return (self._post('http://maps.google.com/glm/mmap/mwmfr', data, {'X-ManualHeader': 'true'}).code == 200)
 
