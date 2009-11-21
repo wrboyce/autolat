@@ -1,1 +1,4 @@
 *.pyc
+autolat.egg-info/
+build/
+dist/
