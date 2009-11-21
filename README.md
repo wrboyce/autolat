@@ -36,6 +36,13 @@ To get your latitude history:
     >>> g = Google(user, passwd)
     >>> h = g.get_history(start=datetime, end=datetime)
 
+To send a message to your device:
+
+    >>> from autolat import MobileMe
+    >>> m = MobileMe(user, passwd)
+    >>> m.msg_device('Hello World')
+    >>> m.msg_device('Hello World!', alarm=True)
+
 
 # Stuff you probably won't need
 

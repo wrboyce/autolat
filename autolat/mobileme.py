@@ -79,7 +79,7 @@ class MobileMe(WebService):
 
     def locate_device(self, device_id=None):
         device = self.get_device(device_id)
-        self._logger.info('Locating device "%(id)s" (%(osver)s)', device)
+        self._logger.info('Locating device "%(id)s"', device)
         body = {
             'deviceId': device['id'],
             'deviceOsVersion': device['osver'],
@@ -88,8 +88,25 @@ class MobileMe(WebService):
         resp = self._js_post('https://secure.me.com/wo/WebObjects/DeviceMgmt.woa/wa/LocateAction/locateStatus', data)
         if resp.code == 200:
             return Location(resp.read())
-        else:
-            self._logger.error('Locate device "%s" failed!', device['id'])
+        self._logger.error('Locate device "%s" failed!', device['id'])
+
+    def msg_device(self, msg, alarm=False, device_id=None):
+        device = self.get_device(device_id)
+        self._logger.info('Sending "%s" to device "%s" with%s alarm', msg, device['id'], 'out' if not alarm else '')
+        body = {
+            'deviceClass': device['class'],
+            'deviceId': device['id'],
+            'deviceOsVersion': device['osver'],
+            'deviceType': device['type'],
+            'message': msg,
+            'playAlarm': 'Y' if alarm else 'N',
+        }
+        data = {'postBody': json.dumps(body)}
+        resp = self._js_post('https://secure.me.com/wo/WebObjects/DeviceMgmt.woa/wa/SendMessageAction/sendMessage', data)
+        resp_data = json.loads(resp.read())
+        if resp_data['status'] == 1:
+            return True
+        self._logger.error('Sending message to device "%s" failed!', device['id'])
 
 class Location(object):
     """ Holds location data returned from `MobileMe.WebService`
