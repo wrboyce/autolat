@@ -14,8 +14,7 @@ class Google(WebService):
     loginform_pass_field = 'Passwd'
     loginform_persist_field = 'PersistentCookie'
 
-    def update_latitude(self, date, lat, lng, accuracy):
-        import time
+    def update_latitude(self, location):
         data = {
             't': 'ul',
             'mwmct': 'iphone',
@@ -24,9 +23,9 @@ class Google(WebService):
             'mwmdv': '30102',
             'auto': 'true',
             'nr': '180000',
-            'cts': ('%s00' % time.mktime(date.timetuple())).replace('.', ''), # biggest. hack. ever.
-            'lat': '%s' % lat,
-            'lng': '%s' % lng,
-            'accuracy': accuracy,
+            'cts': location.timestamp*1000,
+            'lat': '%s' % location.latitude,
+            'lng': '%s' % location.longitude,
+            'accuracy': location.accuracy,
         }
         return (self._post('http://maps.google.com/glm/mmap/mwmfr', data, {'X-ManualHeader': 'true'}).code == 200)

@@ -1,5 +1,6 @@
 from datetime import datetime
 import re
+import time
 import urllib
 
 import simplejson as json
@@ -80,8 +81,35 @@ class MobileMe(WebService):
             'deviceOsVersion': device['osver'],
         }
         data = {'postBody': json.dumps(body)}
-        resp_data = json.loads(self._js_post('https://secure.me.com/wo/WebObjects/DeviceMgmt.woa/wa/LocateAction/locateStatus', data).read())
-        dt = datetime.strptime('%s %s' % (resp_data['date'], resp_data['time']), '%B %d, %Y %I:%M %p')
-        del(resp_data['date'], resp_data['time'])
-        resp_data['date'] = dt
-        return resp_data
+        resp = self._js_post('https://secure.me.com/wo/WebObjects/DeviceMgmt.woa/wa/LocateAction/locateStatus', data)
+        if resp.code == 200:
+            return Location(resp.read())
+        return None # bzzt, something broke.
+
+class Location(object):
+    """ Holds location data returned from `MobileMe.WebService`
+
+        Attributes:
+            * accuracy (meters)
+            * datetime
+            * is_accurate
+            * is_locate_finished
+            * is_location_available
+            * is_old_location_result
+            * is_recent
+            * latitude
+            * longitude
+            * status
+            * status_string
+            * timestamp
+    """
+    def __init__(self, json_data):
+        data = json.loads(json_data)
+        for k,v in data.iteritems():
+            if k not in ('date', 'time'):
+                setattr(self, self._uncamel(k), v)
+            self.datetime = datetime.strptime('%s %s' % (data['date'], data['time']), '%B %d, %Y %I:%M %p')
+            self.timestamp = int(time.mktime(self.datetime.timetuple()))
+
+    def _uncamel(self, str):
+        return ''.join('_%s' % c.lower() if c.isupper() else c for c in str)
