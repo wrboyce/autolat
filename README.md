@@ -1,6 +1,15 @@
 autolat
 =======
 
+# Basic Usage
+
+The easiest way to use autolat is to use the `autolat` command from your shell. The help should be self explainatory. If required options are not provided, they are prompted for:
+
+    $ autolat [command] [options]
+
+Currently, the only command is `update`.
+
+
 # API
 
 The API is currently quite simplistic.

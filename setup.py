@@ -11,6 +11,9 @@ setup(
     author_email='me@willboyce.com',
     url='http://github.com/wrboyce/autolat',
     packages=['autolat'],
+    entry_points = {
+        'console_scripts': ['autolat = autolat:main'],
+    },
     classifiers=[
         'Development Status :: 4 - Beta',
         'Licence :: BSD',
