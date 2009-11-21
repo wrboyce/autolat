@@ -18,13 +18,9 @@ class Google(WebService):
     loginform_pass_field = 'Passwd'
     loginform_persist_field = 'PersistentCookie'
 
-    def update_latitude(self, location):
-        self._logger.info('Updating latitude location (%s, %s) ~%sm @ %s',
-            location.longitude,
-            location.latitude,
-            location.accuracy,
-            location.datetime.strftime('%d/%m/%Y %H:%M:%S')
-        )
+    def update_latitude(self, timestamp, latitude, longitude, accuracy):
+        if self._logger.isEnabledFor(logging.INFO):
+            self._logger.info('Updating latitude location (%s, %s) ~%sm @ %s', longitude, latitude, accuracy, datetime.fromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S'))
         data = {
             't': 'ul',
             'mwmct': 'iphone',
@@ -33,10 +29,10 @@ class Google(WebService):
             'mwmdv': '30102',
             'auto': 'true',
             'nr': '180000',
-            'cts': location.timestamp*1000,
-            'lat': '%s' % location.latitude,
-            'lng': '%s' % location.longitude,
-            'accuracy': location.accuracy,
+            'cts': timestamp*1000, # epoch in miliseconds
+            'lat': '%s' % latitude,
+            'lng': '%s' % longitude,
+            'accuracy': accuracy,
         }
         return (self._post('http://maps.google.com/glm/mmap/mwmfr', data, {'X-ManualHeader': 'true'}).code == 200)
 

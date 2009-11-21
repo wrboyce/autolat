@@ -20,7 +20,7 @@ To update your current location:
     >>> g = Google(user, passwd)
     >>> m = MobileMe(user, passwd)
     >>> l = m.locate_device()
-    >>> g.update_latitude(l)
+    >>> g.update_latitude(timestamp=l.timestamp, latitude=l.latitude, longitude=l.longitude, accuracy=l.accuracy)
 
 To get your latitude history:
 
@@ -120,5 +120,4 @@ There is a base Web Service class which tries to handle logging into a webservic
 
 # Todo
 
-* `Google.update_latitude` takes a `mobileme.Location` object which is silly and restricting
 * `Google.get_history` takes American stupid-endian dates, switch to `datetime` objects

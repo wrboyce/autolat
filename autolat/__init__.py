@@ -1,5 +1,4 @@
 from webservice import WebService
-
 from google import Google
 from mobileme import MobileMe
 
@@ -48,4 +47,4 @@ def main():
     g = Google(g_user, g_pass)
     m = MobileMe(m_user, m_pass)
     l = m.locate_device()
-    g.update_latitude(l)
+    g.update_latitude(timestamp=l.timestamp, latitude=l.latitude, longitude=l.longitude, accuracy=l.accuracy)
