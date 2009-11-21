@@ -26,7 +26,7 @@ To get your latitude history:
 
     >>> from autolat import Google
     >>> g = Google(user, passwd)
-    >>> h = g.get_history(start='mm/dd/yyyy', end='mm/dd/yyyy')
+    >>> h = g.get_history(start=datetime, end=datetime)
 
 
 # Stuff you probably won't need
@@ -116,8 +116,3 @@ There is a base Web Service class which tries to handle logging into a webservic
 
 * `_get(url, data, headers)`
 * `_post(url, data, headers)`
-
-
-# Todo
-
-* `Google.get_history` takes American stupid-endian dates, switch to `datetime` objects

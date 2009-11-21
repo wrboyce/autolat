@@ -39,10 +39,10 @@ class Google(WebService):
     def get_history(self, start, end):
         url = 'http://www.google.com/latitude/apps/history/kml'
         data = {
-            'startDay': start,
-            'endDay': end,
+            'startDay': start.strftime('%m/%d/%Y'),
+            'endDay': end.strftime('%m/%d/%Y'),
         }
-        self._logger.info('Fetching latitude history from %s until %s', start, end)
+        self._logger.info('Fetching latitude history from %s until %s', start.strftime('%d/%m/%Y'), end.strftime('%d/%m/%Y'))
         kml = self._get(url, data).read()
         if self._logger.isEnabledFor(logging.DEBUG):
             self._logger.debug('Got KML:')
