@@ -51,6 +51,7 @@ class MobileMe(WebService):
         html = self._js_post(url).read()
         for match in re.findall("new Device\(([^)]+)\)", html):
             _, id, type, cls, osver, _, _ = match.replace("'", '').split(', ')
+            self._logger.info('Found device "%s"', id)
             self._add_device(id, type, cls, osver)
 
     def _add_device(self, id, type, cls, osver):
@@ -69,13 +70,12 @@ class MobileMe(WebService):
             if len(self._devices) == 1:
                 id = self._devices.keys()[0]
             else:
-                return None # should do something more drastic here!
+                self._logger.error('Multiple devices found and no ID specified, bailing.')
         return self._devices[id]
 
     def locate_device(self, device_id=None):
         device = self.get_device(device_id)
-        if device is None:
-            return None # blah.. drastic
+        self._logger.info('Locating device "%(id)s" (%(osver)s)', device)
         body = {
             'deviceId': device['id'],
             'deviceOsVersion': device['osver'],
@@ -84,7 +84,8 @@ class MobileMe(WebService):
         resp = self._js_post('https://secure.me.com/wo/WebObjects/DeviceMgmt.woa/wa/LocateAction/locateStatus', data)
         if resp.code == 200:
             return Location(resp.read())
-        return None # bzzt, something broke.
+        else:
+            self._logger.error('Locate device "%s" failed!', device['id'])
 
 class Location(object):
     """ Holds location data returned from `MobileMe.WebService`

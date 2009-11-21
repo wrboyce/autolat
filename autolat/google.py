@@ -15,6 +15,12 @@ class Google(WebService):
     loginform_persist_field = 'PersistentCookie'
 
     def update_latitude(self, location):
+        self._logger.info('Updating latitude location (%s, %s) ~%sm @ %s',
+            location.longitude,
+            location.latitude,
+            location.accuracy,
+            location.datetime.strftime('%d/%m/%Y %H:%M:%S')
+        )
         data = {
             't': 'ul',
             'mwmct': 'iphone',
