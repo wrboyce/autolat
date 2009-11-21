@@ -21,6 +21,9 @@ class MobileMe(WebService):
     loginform_pass_field = 'password'
     loginform_persist_field = 'keepLoggedIn'
 
+    class MultipleDevicesFound(Exception):
+        pass
+
     def __init__(self, *args, **kwargs):
         super(MobileMe, self).__init__(*args, **kwargs)
         self.devices = set()
@@ -71,6 +74,7 @@ class MobileMe(WebService):
                 id = self._devices.keys()[0]
             else:
                 self._logger.error('Multiple devices found and no ID specified, bailing.')
+                raise MobileMe.MultipleDevicesFound('Device ID must be specified.')
         return self._devices[id]
 
     def locate_device(self, device_id=None):
