@@ -3,11 +3,19 @@ autolat
 
 # Basic Usage
 
-The easiest way to use autolat is to use the `autolat` command from your shell. The help should be self explainatory. If required options are not provided, they are prompted for:
+The easiest way to use autolat is to use the `autolat` command from your shell. If required options are not provided, they are prompted for:
 
     $ autolat [command] [options]
 
-Currently, the only command is `update`.
+To automatically update your latitude location (without any prompts):
+
+    $ autolat update -g googleuser -G googlepass -m mobilemeuser -M mobilemepass
+
+To get your latitude location history between two specified dates (the password is prompted for in this example):
+
+    $ autolat get_history dd/mm/yyyy dd/mm/yyyy -g googleuser
+
+See `autolat -h` for more information.
 
 
 # API
