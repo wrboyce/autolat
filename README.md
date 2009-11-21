@@ -55,6 +55,12 @@ They can be initialised from a KML placemark easily:
     >>> Location.from_kml(tree)
     <google.Location>
 
+And a sorted history can be generated from a full KML in much the same way:
+
+    >>> from autolat.google import Location
+    >>> kml = """<kml>...</kml>"""
+    >>> Location.history_from_kml(kml)
+    [<google.Location>, <google.Location>, ...]
 
 ## MobileMe
 

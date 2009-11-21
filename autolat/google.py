@@ -48,8 +48,7 @@ class Google(WebService):
             self._logger.debug('Got KML:')
             for line in kml.split('\n'):
                 self._logger.debug('\t%s', line)
-        kml = kml.replace('http://www.opengis.net/kml/2.2', '') # it just makes parsing the tags easier
-        return sorted((Location.from_kml(placemark) for placemark in ElementTree.fromstring(kml).findall('.//Placemark')), key=lambda l: l.datetime)
+        return Location.history_from_kml(kml)
 
 class Location(object):
     """ Represents a Latitude "Check In". """
@@ -61,22 +60,28 @@ class Location(object):
         self.longitude = longitude
 
     def __str__(self):
-        return '(%s,%s) @ %s' % (
+        return '(%s, %s) ~%sm @ %s' % (
             self.latitude,
             self.longitude,
+            self.accuracy,
             self.datetime.strftime('%d/%m/%Y %H:%M:%S')
         )
 
     @classmethod
     def from_kml(cls, kml):
         if isinstance(kml, basestring):
-            tree = ElementTree.fromstring(kml)
-        else:
-            tree = kml
-        longitude, latitude, altitude = tree.find('.//Point/coordinates').text.split(',')
-        for data in tree.findall('.//Data/'):
+            kml = ElementTree.fromstring(kml)
+        longitude, latitude, altitude = kml.find('.//Point/coordinates').text.split(',')
+        for data in kml.findall('.//Data/'):
             if data.attrib['name'] == 'accuracy':
                 accuracy = data.find('value').text
             if data.attrib['name'] == 'timestamp':
                 dt = datetime.fromtimestamp(int(data.find('value').text)/1000)
         return cls(dt, latitude, longitude, accuracy, altitude)
+
+    @classmethod
+    def history_from_kml(cls, kml):
+        if isinstance(kml, basestring):
+            kml = kml.replace('http://www.opengis.net/kml/2.2', '') # it just makes parsing the tags easier - should probably use lxml
+            kml = ElementTree.fromstring(kml)
+        return sorted((Location.from_kml(placemark) for placemark in kml.findall('.//Placemark')), key=lambda l: l.datetime)
