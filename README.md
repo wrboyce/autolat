@@ -15,7 +15,11 @@ To get your latitude location history between two specified dates (the password 
 
     $ autolat get_history dd/mm/yyyy dd/mm/yyyy -g googleuser
 
-See `autolat -h` for more information.
+You can also send a message to your device:
+
+    $ autolat msg_device Hello World
+
+See `autolat -h`, or `autolat [action] -h`, for more information.
 
 
 # API

@@ -106,6 +106,30 @@ class GetHistoryAction(GoogleAction):
         for loc in g.get_history(self.args.start, self.args.end):
             print loc
 
+class MsgDeviceAction(MobileMeAction):
+    keyword = 'msg_device'
+    def setup(self):
+        self.parser.add_argument('-D', '--device', dest='device', help='Device ID', metavar='DEVICE')
+        self.parser.add_argument('-a', '--alarm', dest='alarm', action='store_true', help='Play a sound for 2 minutes with this message')
+        self.parser.add_argument('message', nargs='+', help='Message to be sent to device')
+
+    def main(self):
+        m = MobileMe(self.args.m_user, self.args.m_pass)
+        kwargs = {
+            'msg': ' '.join(self.args.message),
+            'alarm': self.args.alarm,
+            'device_id': self.args.device,
+        }
+        try:
+            return m.msg_device(**kwargs)
+        except m.MultipleDevicesFound:
+            print "Error: Multiple devices found in account:"
+            for id in m.devices():
+                print "\t%s" % id
+            print
+            kwargs['device_id'] = raw_input("Select a device: ")
+            return m.msg_device(**kwargs)
+
 class UpdateAction(GoogleAction, MobileMeAction):
     keyword = 'update'
     def main(self):
