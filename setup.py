@@ -11,9 +11,10 @@ setup(
     author_email='me@willboyce.com',
     url='http://github.com/wrboyce/autolat',
     packages=['autolat'],
-    entry_points = {
+    entry_points={
         'console_scripts': ['autolat = autolat:main'],
     },
+    install_requires=['argparse', 'BeautifulSoup', 'simplejson'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Licence :: BSD',
