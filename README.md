@@ -185,4 +185,4 @@ Actions can easily be added to the `autolat` command by extending the `autolat.a
         def main(self)
             print '%s: %s' % (self.args.foo, ' '.join(self.args.bar))
 
-`Action.setup` is called when the actions are loaded and gives you an opportinity to add arguments to the parser. See `argparse` for more information on this subject. `Action.main` is called when the relevant `Action.keyword` is called (eg `autolat example`). `Action.args` (available in `Action.main` is a `argparse.Namespace` object)
+`Action.setup` is called when the actions are loaded and gives you an opportinity to add arguments to the parser. See `argparse` for more information on this subject. `Action.main` is called when the relevant `Action.keyword` is called (eg `autolat example`). `Action.args`,  available in `Action.main`, is an `argparse.Namespace` object.
