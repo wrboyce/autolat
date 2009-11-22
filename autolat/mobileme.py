@@ -5,6 +5,7 @@ import urllib
 
 import simplejson as json
 
+from actions import Action
 from webservice import WebService
 
 
@@ -135,3 +136,37 @@ class Location(object):
 
     def _uncamel(self, str):
         return ''.join('_%s' % c.lower() if c.isupper() else c for c in str)
+
+class MobileMeAction(Action):
+    required_args = (
+        ('m_user', 'MobileMe Username', False),
+        ('m_pass', 'MobileMe Password', True),
+    )
+    def __init__(self, *args, **kwargs):
+        super(MobileMeAction, self).__init__(*args, **kwargs)
+        self.parser.add_argument('-m', '--mobileme-user', dest='m_user', help='MobileMe username, will be prompted for if not provided', metavar='MOBILEMEUSER')
+        self.parser.add_argument('-M', '--mobileme-pass', dest='m_pass', help='MobileMe password, will be prompted for if not provided', metavar='MOBILEMEPASS')
+
+class MsgDeviceAction(MobileMeAction):
+    keyword = 'msg_device'
+    def setup(self):
+        self.parser.add_argument('-D', '--device', dest='device', help='Device ID', metavar='DEVICE')
+        self.parser.add_argument('-a', '--alarm', dest='alarm', action='store_true', help='Play a sound for 2 minutes with this message')
+        self.parser.add_argument('message', nargs='+', help='Message to be sent to device')
+
+    def main(self):
+        m = MobileMe(self.args.m_user, self.args.m_pass)
+        kwargs = {
+            'msg': ' '.join(self.args.message),
+            'alarm': self.args.alarm,
+            'device_id': self.args.device,
+        }
+        try:
+            return m.msg_device(**kwargs)
+        except m.MultipleDevicesFound:
+            print "Error: Multiple devices found in account:"
+            for id in m.devices():
+                print "\t%s" % id
+            print
+            kwargs['device_id'] = raw_input("Select a device: ")
+            return m.msg_device(**kwargs)

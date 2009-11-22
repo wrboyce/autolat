@@ -2,6 +2,8 @@ from datetime import datetime
 import logging
 from xml.etree import ElementTree
 
+from actions import Action
+from mobileme import MobileMe, MobileMeAction
 from webservice import WebService
 
 
@@ -85,3 +87,37 @@ class Location(object):
             kml = kml.replace('http://www.opengis.net/kml/2.2', '') # it just makes parsing the tags easier - should probably use lxml
             kml = ElementTree.fromstring(kml)
         return sorted((Location.from_kml(placemark) for placemark in kml.findall('.//Placemark')), key=lambda l: l.datetime)
+
+class GoogleAction(Action):
+    required_args = (
+        ('g_user', 'Google Username', False),
+        ('g_pass', 'Google Password', True),
+    )
+    def __init__(self, *args, **kwargs):
+        super(GoogleAction, self).__init__(*args, **kwargs)
+        self.parser.add_argument('-g', '--google-user', dest='g_user', help='Google username, will be prompted for if not provided', metavar='GOOGLEUSER')
+        self.parser.add_argument('-G', '--google-pass', dest='g_pass', help='Google password, will be prompted for if not provided', metavar='GOOGLEPASS')
+
+class GetHistoryAction(GoogleAction):
+    keyword = 'get_history'
+    required_arguments = (
+        ('start', 'Start Date', False),
+        ('end', 'End Date', False),
+    )
+    def setup(self):
+        date = lambda date_str: datetime.strptime(date_str, '%d/%m/%Y')
+        self.parser.add_argument('start', type=date, help='Start date range (format: dd/mm/yyyy)', metavar='start_date')
+        self.parser.add_argument('end', type=date, help='End date range (format: dd/mm/yyyy)', metavar='end_date')
+
+    def main(self):
+        g = Google(self.args.g_user, self.args.g_pass)
+        for loc in g.get_history(self.args.start, self.args.end):
+            print loc
+
+class UpdateAction(GoogleAction, MobileMeAction):
+    keyword = 'update'
+    def main(self):
+        g = Google(self.args.g_user, self.args.g_pass)
+        m = MobileMe(self.args.m_user, self.args.m_pass)
+        l = m.locate_device()
+        g.update_latitude(timestamp=l.timestamp, latitude=l.latitude, longitude=l.longitude, accuracy=l.accuracy)
