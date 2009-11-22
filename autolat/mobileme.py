@@ -108,6 +108,29 @@ class MobileMe(WebService):
         if resp_data['status'] == 1:
             return True
         self._logger.error('Sending message to device "%s" failed!', device['id'])
+        self._logger.debug('%s', resp_data)
+
+    def lock_device(self, pin, device_id=None):
+        pin = str(pin)
+        if len(pin) != 4 or not pin.isdigit():
+            self._logger.error('PIN must be 4 digits')
+        device = self.get_device(device_id)
+        self._logger.info('Locking device "%s"', device['id'])
+        body = {
+            'deviceClass': device['class'],
+            'deviceId': device['id'],
+            'deviceOsVersion': device['osver'],
+            'devicePasscode': pin,
+            'devicePinConstraint': 'Y',
+            'deviceType': device['type'],
+        }
+        data = {'postBody': json.dumps(body)}
+        resp = self._js_post('https://secure.me.com/wo/WebObjects/DeviceMgmt.woa/wa/SendRemoteLockAction/sendRemoteLock', data)
+        resp_data = json.loads(resp.read())
+        if resp_data['status'] == 1:
+            return True
+        self._logger.error('Locking device "%s" failed!', device['id'])
+        self._logger.debug('%s', resp_data)
 
 class Location(object):
     """ Holds location data returned from `MobileMe.WebService`
