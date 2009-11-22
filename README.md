@@ -9,6 +9,8 @@ Autolat can be installed easily via pip:
 
 ## Dependencies
 
+Dependencies are handled automatically by setuptools.
+
 * argparse
 * BeautifulSoup
 * simplejson
@@ -49,8 +51,6 @@ See `autolat -h`, or `autolat [action] -h`, for more information.
 
 # API
 
-The API is currently quite simplistic.
-
 To update your current location:
 
     >>> from autolat import Google, MobileMe
@@ -86,7 +86,8 @@ To lock your device with a PIN:
     >>> m = MobileMe(user, passwd)
     >>> m.lock_device(pin=1234)
 
-# Stuff you probably won't need
+
+# Internals
 
 ## Google
 
@@ -161,7 +162,7 @@ If thre are multiple devices registered to a Mobile Me account, a device_id will
 
 ## WebService
 
-There is a base Web Service class which tries to handle logging into a webservice that doesn't provide an API. It can easily be extended to add custom services:
+There is a base Web Service class which tries to handle logging into a webservice that does not provide an API. It can easily be extended to add custom services:
 
     from autolat import WebService
 
