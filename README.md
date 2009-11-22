@@ -1,7 +1,20 @@
 autolat
 =======
 
-# Basic Usage
+# Installation
+
+Autolat can be installed easily via pip:
+
+    $ pip install -e git+git://github.com/wrboyce/autolat.git#egg=autolat
+
+## Dependencies
+
+* argparse
+* BeautifulSoup
+* simplejson
+
+
+# Usage
 
 The easiest way to use autolat is to use the `autolat` command from your shell. If required options are not provided, they are prompted for:
 
@@ -18,6 +31,14 @@ To get your latitude location history between two specified dates (the password 
 You can also send a message to your device:
 
     $ autolat msg_device Hello World
+
+Locate your device:
+
+    $ autolat locate_device
+
+And lock your device with a PIN:
+
+    $ autolat lock_device 1234
 
 See `autolat -h`, or `autolat [action] -h`, for more information.
 
@@ -47,6 +68,11 @@ To send a message to your device:
     >>> m.msg_device('Hello World')
     >>> m.msg_device('Hello World!', alarm=True)
 
+To lock your device with a PIN:
+
+    >>> from autolat import MobileMe
+    >>> m = MobileMe(user, passwd)
+    >>> m.lock_device(pin=1234)
 
 # Stuff you probably won't need
 
@@ -111,7 +137,7 @@ And a sorted history can be generated from a full KML in much the same way:
 
 ### Multiple Devices
 
-If you have multiple devices registered to your Mobile Me account, you will need to specify which device you wish to locate.
+If thre are multiple devices registered to a Mobile Me account, a device_id will need to be specified:
 
     >>> from autolat import MobileMe
     >>> m = MobileMe(user, passwd)
@@ -141,3 +167,22 @@ There is a base Web Service class which tries to handle logging into a webservic
 
 * `_get(url, data, headers)`
 * `_post(url, data, headers)`
+
+
+## Actions
+
+Actions can easily be added to the `autolat` command by extending the `autolat.actions.Action` class:
+
+    from autolat.actions import Action
+
+    class ExampleAction(Action):
+        keyword = 'example'
+
+        def setup(self):
+            self.parser.add_argument('foo')
+            self.parser.add_argument('bar', nargs='*')
+
+        def main(self)
+            print '%s: %s' % (self.args.foo, ' '.join(self.args.bar))
+
+`Action.setup` is called when the actions are loaded and gives you an opportinity to add arguments to the parser. See `argparse` for more information on this subject. `Action.main` is called when the relevant `Action.keyword` is called (eg `autolat example`). `Action.args` (available in `Action.main` is a `argparse.Namespace` object)
