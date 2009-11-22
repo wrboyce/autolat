@@ -158,7 +158,7 @@ class Location(object):
             self.timestamp = int(time.mktime(self.datetime.timetuple()))
 
     def __str__(self):
-        return '(%s, %s) ~%sm @ %s' % (self.latitude, self.longitude, self.accuracy, self.datetime.strftime('%d/%m/%y %M:%M:%S'))
+        return '(%s, %s) ~%sm @ %s' % (self.latitude, self.longitude, self.accuracy, self.datetime.strftime('%d/%m/%y %H:%M:%S'))
 
     def _uncamel(self, str):
         return ''.join('_%s' % c.lower() if c.isupper() else c for c in str)
