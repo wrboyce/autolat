@@ -1,5 +1,6 @@
 from datetime import datetime
 import logging
+import re
 from xml.etree import ElementTree
 
 from actions import Action
@@ -20,6 +21,10 @@ class Google(WebService):
     loginform_pass_field = 'Passwd'
     loginform_persist_field = 'PersistentCookie'
 
+    def _js_post(self, url, data={}, headers={}):
+        headers.update({'X-ManualHeader': 'true'})
+        return super(Google, self)._post(url, data, headers)
+
     def update_latitude(self, timestamp, latitude, longitude, accuracy):
         if self._logger.isEnabledFor(logging.INFO):
             self._logger.info('Updating latitude location (%s, %s) ~%sm @ %s', longitude, latitude, accuracy, datetime.fromtimestamp(timestamp).strftime('%d/%m/%Y %H:%M:%S'))
@@ -36,7 +41,7 @@ class Google(WebService):
             'lng': '%s' % longitude,
             'accuracy': accuracy,
         }
-        return (self._post('http://maps.google.com/glm/mmap/mwmfr', data, {'X-ManualHeader': 'true'}).code == 200)
+        return (self._js_post('http://maps.google.com/glm/mmap/mwmfr', data).code == 200)
 
     def get_history(self, start, end):
         url = 'http://www.google.com/latitude/apps/history/kml'
@@ -51,6 +56,35 @@ class Google(WebService):
             for line in kml.split('\n'):
                 self._logger.debug('\t%s', line)
         return Location.history_from_kml(kml)
+
+    def locate_friends(self):
+        data = {
+            'gpsc': 'false',
+            'mwmct': 'iphone',
+            'mwmcv': '5.8',
+            'mwmdt': 'iphone',
+            'mwmdv': '30000',
+            't': 'fs'
+        }
+        self._logger.info("Locating friends...")
+        resp = self._js_post('http://maps.google.com/glm/mmap/mwmfr', data).read().replace('\n', '')
+        friends = []
+        rx = re.compile('\[,\[,"-?\d+",3,1,1,,0\],"(?P<email>[^"]+)","(?P<name>[^"]+)",(?P<phone>[^,]*),(?P<lat>-?\d+),(?P<lon>-?\d+),"(?P<timestamp>\d{10})\d{3}",(?P<accuracy>\d*),\["(?P<address>[^"]*)","(?P<city_state>[^"]*)"]')
+        for friend in rx.findall(resp):
+            self._logger.debug('Found friend "%s"' % friend[1])
+            friends.append({
+                'email': friend[0],
+                'location': Location(**{
+                    'dt': datetime.fromtimestamp(int(friend[5])/1000),
+                    'latitude': friend[3],
+                    'longitude': friend[4],
+                    'accuracy': friend[6],
+                    'reversegeo': ('%s, %s' % (friend[7], friend[8])).strip(', ')
+                }),
+                'name': friend[1],
+                'phone': friend[2]
+            })
+        return friends
 
 class Location(object):
     """ Represents a Latitude "Check In". """
@@ -68,7 +102,6 @@ class Location(object):
             self.longitude,
             self.accuracy,
             self.datetime.strftime('%d/%m/%Y %H:%M:%S'),
-            ('(%s)' % self.reversegeo) if self.reversegeo else ''
         )
 
     @classmethod
@@ -115,6 +148,13 @@ class GetHistoryAction(GoogleAction):
         g = Google(self.args.g_user, self.args.g_pass)
         for loc in g.get_history(self.args.start, self.args.end):
             print loc
+
+class LocateFriends(GoogleAction):
+    keyword = 'locate_friends'
+    def main(self):
+        g = Google(self.args.g_user, self.args.g_pass)
+        for friend in g.locate_friends():
+            print '%s - %s\t\n%s' % (friend['name'], friend['location'].reversegeo, friend['location'])
 
 class UpdateAction(GoogleAction, MobileMeAction):
     keyword = 'update'

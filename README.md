@@ -28,6 +28,10 @@ To get your latitude location history between two specified dates (the password 
 
     $ autolat get_history dd/mm/yyyy dd/mm/yyyy -g googleuser
 
+Locate your latitude friends:
+
+    $ autolat locate_friends
+
 You can also send a message to your device:
 
     $ autolat msg_device Hello World
@@ -60,6 +64,14 @@ To get your latitude history:
     >>> from autolat import Google
     >>> g = Google(user, passwd)
     >>> h = g.get_history(start=datetime, end=datetime)
+
+Locate your friends:
+
+    >>> from autolat import Google
+    >>> g = Google(user, passwd)
+    >>> f = g.locate_friends()
+    >>> f.keys()
+    ['name', 'email', 'location', 'phone']
 
 To send a message to your device:
 
