@@ -157,6 +157,9 @@ class Location(object):
             self.datetime = datetime.strptime('%s %s' % (data['date'], data['time']), '%B %d, %Y %I:%M %p')
             self.timestamp = int(time.mktime(self.datetime.timetuple()))
 
+    def __str__(self):
+        return '(%s, %s) ~%sm @ %s' % (self.latitude, self.longitude, self.accuracy, self.datetime.strftime('%d/%m/%y %M:%M:%S'))
+
     def _uncamel(self, str):
         return ''.join('_%s' % c.lower() if c.isupper() else c for c in str)
 
@@ -169,6 +172,17 @@ class MobileMeAction(Action):
         super(MobileMeAction, self).__init__(*args, **kwargs)
         self.parser.add_argument('-m', '--mobileme-user', dest='m_user', help='MobileMe username, will be prompted for if not provided', metavar='MOBILEMEUSER')
         self.parser.add_argument('-M', '--mobileme-pass', dest='m_pass', help='MobileMe password, will be prompted for if not provided', metavar='MOBILEMEPASS')
+
+    def _with_device(self, inst, func, kwargs):
+        try:
+            return func(**kwargs)
+        except MobileMe.MultipleDevicesFound:
+            print "Error: Multiple devices found in account:"
+            for id in inst.devices():
+                print "\t%s" % id
+            print
+            kwargs['device_id'] = raw_input("Select a device: ")
+            return func(**kwargs)
 
 class MsgDeviceAction(MobileMeAction):
     keyword = 'msg_device'
@@ -184,12 +198,28 @@ class MsgDeviceAction(MobileMeAction):
             'alarm': self.args.alarm,
             'device_id': self.args.device,
         }
-        try:
-            return m.msg_device(**kwargs)
-        except m.MultipleDevicesFound:
-            print "Error: Multiple devices found in account:"
-            for id in m.devices():
-                print "\t%s" % id
-            print
-            kwargs['device_id'] = raw_input("Select a device: ")
-            return m.msg_device(**kwargs)
+        return self._with_device(m, m.msg_device, kwargs)
+
+class LocateDeviceAction(MobileMeAction):
+    keyword = 'locate_device'
+    def setup(self):
+        self.parser.add_argument('-D', '--device', dest='device', help='Device ID', metavar='DEVICE')
+
+    def main(self):
+        m = MobileMe(self.args.m_user, self.args.m_pass)
+        kwargs = {'device_id': self.args.device}
+        print self._with_device(m, m.locate_device, kwargs)
+
+class LockDeviceAction(MobileMeAction):
+    keyword = 'lock_device'
+    def setup(self):
+        self.parser.add_argument('-D', '--device', dest='device', help='Device ID', metavar='DEVICE')
+        self.parser.add_argument('pin', type=int, help='PIN to lock the device with', metavar='PIN')
+
+    def main(self):
+        m = MobileMe(self.args.m_user, self.args.m_pass)
+        kwargs = {
+            'pin': self.args.pin,
+            'device_id': self.args.device,
+        }
+        return self._with_device(m, m.lock_device, kwargs)
