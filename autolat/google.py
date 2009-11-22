@@ -54,19 +54,21 @@ class Google(WebService):
 
 class Location(object):
     """ Represents a Latitude "Check In". """
-    def __init__(self, dt, latitude, longitude, accuracy, altitude):
+    def __init__(self, dt, latitude, longitude, accuracy, altitude=0, reversegeo=None):
         self.accuracy = accuracy
         self.altitude = altitude
         self.datetime = dt
         self.latitude = latitude
         self.longitude = longitude
+        self.reversegeo = reversegeo
 
     def __str__(self):
         return '(%s, %s) ~%sm @ %s' % (
             self.latitude,
             self.longitude,
             self.accuracy,
-            self.datetime.strftime('%d/%m/%Y %H:%M:%S')
+            self.datetime.strftime('%d/%m/%Y %H:%M:%S'),
+            ('(%s)' % self.reversegeo) if self.reversegeo else ''
         )
 
     @classmethod
@@ -79,7 +81,7 @@ class Location(object):
                 accuracy = data.find('value').text
             if data.attrib['name'] == 'timestamp':
                 dt = datetime.fromtimestamp(int(data.find('value').text)/1000)
-        return cls(dt, latitude, longitude, accuracy, altitude)
+        return cls(dt, latitude, longitude, accuracy, altitude, reversegeo=kml.find('.//description/').text)
 
     @classmethod
     def history_from_kml(cls, kml):
