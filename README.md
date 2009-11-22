@@ -198,3 +198,8 @@ Actions can easily be added to the `autolat` command by extending the `autolat.a
             print '%s: %s' % (self.args.foo, ' '.join(self.args.bar))
 
 `Action.setup` is called when the actions are loaded and gives you an opportinity to add arguments to the parser. See `argparse` for more information on this subject. `Action.main` is called when the relevant `Action.keyword` is called (eg `autolat example`). `Action.args`,  available in `Action.main`, is an `argparse.Namespace` object.
+
+
+# Todo
+
+* As soon as I have reason to wipe my iPhone, or a spare iPhone to test with, I will look at implementing `MobileMe.wipe_device`.
