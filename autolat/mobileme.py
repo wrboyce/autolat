@@ -15,7 +15,7 @@ class MobileMe(WebService):
         'service': 'account',
         'ssoNamespace': 'primary-me',
         'reauthorize': 'Y',
-        'returnURL': 'aHR0cHM6Ly9zZWN1cmUubWUuY29tL2FjY291bnQv'
+        'returnURL': 'aHR0cHM6Ly9zZWN1cmUubWUuY29tL2FjY291bnQv',
     }
     loginform_id = 'LoginForm'
     loginform_user_field = 'username'
@@ -132,6 +132,7 @@ class MobileMe(WebService):
         self._logger.error('Locking device "%s" failed!', device['id'])
         self._logger.debug('%s', resp_data)
 
+
 class Location(object):
     """ Holds location data returned from `MobileMe.WebService`
 
@@ -149,9 +150,10 @@ class Location(object):
             * status_string
             * timestamp
     """
+
     def __init__(self, json_data):
         data = json.loads(json_data)
-        for k,v in data.iteritems():
+        for k, v in data.iteritems():
             if k not in ('date', 'time'):
                 setattr(self, self._uncamel(k), v)
             self.datetime = datetime.strptime('%s %s' % (data['date'], data['time']), '%B %d, %Y %I:%M %p')
@@ -163,11 +165,13 @@ class Location(object):
     def _uncamel(self, str):
         return ''.join('_%s' % c.lower() if c.isupper() else c for c in str)
 
+
 class MobileMeAction(Action):
     required_args = (
         ('m_user', 'MobileMe Username', False),
         ('m_pass', 'MobileMe Password', True),
     )
+
     def __init__(self, *args, **kwargs):
         super(MobileMeAction, self).__init__(*args, **kwargs)
         self.parser.add_argument('-m', '--mobileme-user', dest='m_user', help='MobileMe username, will be prompted for if not provided', metavar='MOBILEMEUSER')
@@ -184,8 +188,10 @@ class MobileMeAction(Action):
             kwargs['device_id'] = raw_input("Select a device: ")
             return func(**kwargs)
 
+
 class MsgDeviceAction(MobileMeAction):
     keyword = 'msg_device'
+
     def setup(self):
         self.parser.add_argument('-D', '--device', dest='device', help='Device ID', metavar='DEVICE')
         self.parser.add_argument('-a', '--alarm', dest='alarm', action='store_true', help='Play a sound for 2 minutes with this message')
@@ -200,8 +206,10 @@ class MsgDeviceAction(MobileMeAction):
         }
         return self._with_device(m, m.msg_device, kwargs)
 
+
 class LocateDeviceAction(MobileMeAction):
     keyword = 'locate_device'
+
     def setup(self):
         self.parser.add_argument('-D', '--device', dest='device', help='Device ID', metavar='DEVICE')
 
@@ -210,8 +218,10 @@ class LocateDeviceAction(MobileMeAction):
         kwargs = {'device_id': self.args.device}
         print self._with_device(m, m.locate_device, kwargs)
 
+
 class LockDeviceAction(MobileMeAction):
     keyword = 'lock_device'
+
     def setup(self):
         self.parser.add_argument('-D', '--device', dest='device', help='Device ID', metavar='DEVICE')
         self.parser.add_argument('pin', type=int, help='PIN to lock the device with', metavar='PIN')

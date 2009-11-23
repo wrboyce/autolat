@@ -20,6 +20,7 @@ def main():
         logging.getLogger('autolat').setLevel(logging.DEBUG)
     return actions[args.action](args)
 
+
 class Action(object):
     keyword = ''
     required_args = ()

@@ -36,7 +36,7 @@ class Google(WebService):
             'mwmdv': '30102',
             'auto': 'true',
             'nr': '180000',
-            'cts': timestamp*1000, # epoch in miliseconds
+            'cts': timestamp * 1000, # epoch in miliseconds
             'lat': '%s' % latitude,
             'lng': '%s' % longitude,
             'accuracy': accuracy,
@@ -64,7 +64,7 @@ class Google(WebService):
             'mwmcv': '5.8',
             'mwmdt': 'iphone',
             'mwmdv': '30000',
-            't': 'fs'
+            't': 'fs',
         }
         self._logger.info("Locating friends...")
         resp = self._js_post('http://maps.google.com/glm/mmap/mwmfr', data).read().replace('\n', '')
@@ -75,19 +75,21 @@ class Google(WebService):
             friends.append({
                 'email': friend[0],
                 'location': Location(**{
-                    'dt': datetime.fromtimestamp(int(friend[5])/1000),
+                    'dt': datetime.fromtimestamp(int(friend[5]) / 1000),
                     'latitude': friend[3],
                     'longitude': friend[4],
                     'accuracy': friend[6],
-                    'reversegeo': ('%s, %s' % (friend[7], friend[8])).strip(', ')
+                    'reversegeo': ('%s, %s' % (friend[7], friend[8])).strip(', '),
                 }),
                 'name': friend[1],
                 'phone': friend[2]
             })
         return friends
 
+
 class Location(object):
     """ Represents a Latitude "Check In". """
+
     def __init__(self, dt, latitude, longitude, accuracy, altitude=0, reversegeo=None):
         self.accuracy = accuracy
         self.altitude = altitude
@@ -113,7 +115,7 @@ class Location(object):
             if data.attrib['name'] == 'accuracy':
                 accuracy = data.find('value').text
             if data.attrib['name'] == 'timestamp':
-                dt = datetime.fromtimestamp(int(data.find('value').text)/1000)
+                dt = datetime.fromtimestamp(int(data.find('value').text) / 1000)
         return cls(dt, latitude, longitude, accuracy, altitude, reversegeo=kml.find('.//description/').text)
 
     @classmethod
@@ -123,15 +125,18 @@ class Location(object):
             kml = ElementTree.fromstring(kml)
         return sorted((Location.from_kml(placemark) for placemark in kml.findall('.//Placemark')), key=lambda l: l.datetime)
 
+
 class GoogleAction(Action):
     required_args = (
         ('g_user', 'Google Username', False),
         ('g_pass', 'Google Password', True),
     )
+
     def __init__(self, *args, **kwargs):
         super(GoogleAction, self).__init__(*args, **kwargs)
         self.parser.add_argument('-g', '--google-user', dest='g_user', help='Google username, will be prompted for if not provided', metavar='GOOGLEUSER')
         self.parser.add_argument('-G', '--google-pass', dest='g_pass', help='Google password, will be prompted for if not provided', metavar='GOOGLEPASS')
+
 
 class GetHistoryAction(GoogleAction):
     keyword = 'get_history'
@@ -139,6 +144,7 @@ class GetHistoryAction(GoogleAction):
         ('start', 'Start Date', False),
         ('end', 'End Date', False),
     )
+
     def setup(self):
         date = lambda date_str: datetime.strptime(date_str, '%d/%m/%Y')
         self.parser.add_argument('start', type=date, help='Start date range (format: dd/mm/yyyy)', metavar='start_date')
@@ -149,15 +155,19 @@ class GetHistoryAction(GoogleAction):
         for loc in g.get_history(self.args.start, self.args.end):
             print loc
 
+
 class LocateFriends(GoogleAction):
     keyword = 'locate_friends'
+
     def main(self):
         g = Google(self.args.g_user, self.args.g_pass)
         for friend in g.locate_friends():
             print '%s - %s\t\n%s' % (friend['name'], friend['location'].reversegeo, friend['location'])
 
+
 class UpdateAction(GoogleAction, MobileMeAction):
     keyword = 'update'
+
     def main(self):
         g = Google(self.args.g_user, self.args.g_pass)
         m = MobileMe(self.args.m_user, self.args.m_pass)

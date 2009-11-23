@@ -8,6 +8,7 @@ import BeautifulSoup as beautifulsoup
 
 class CookieJar(cookielib.CookieJar):
     """ Workaround for http://bugs.python.org/issue3924. """
+
     def _cookie_from_cookie_tuple(self, tup, request):
         name, value, standard, rest = tup
         version = standard.get('version', None)
@@ -16,6 +17,7 @@ class CookieJar(cookielib.CookieJar):
         standard['version'] = version
         tup = (name, value, standard, rest)
         return cookielib.CookieJar._cookie_from_cookie_tuple(self, tup, request)
+
 
 class WebService(object):
     loginform_url = ''
@@ -45,10 +47,10 @@ class WebService(object):
     def _get(self, url, data={}, headers={}):
         if self._logger.isEnabledFor(logging.DEBUG):
             self._logger.debug('%s' % url)
-            for k,v in headers.iteritems():
-                self._logger.debug('h> %s: %s' % (k,v))
-            for k,v in data.iteritems():
-                self._logger.debug('d> %s=%s' % (k,v))
+            for k, v in headers.iteritems():
+                self._logger.debug('h> %s: %s' % (k, v))
+            for k, v in data.iteritems():
+                self._logger.debug('d> %s=%s' % (k, v))
         if data:
             url = '%s?%s' % (url, urllib.urlencode(data))
         req = urllib2.Request(url, headers=headers)
@@ -57,10 +59,10 @@ class WebService(object):
     def _post(self, url, data={}, headers={}):
         if self._logger.isEnabledFor(logging.DEBUG):
             self._logger.debug('%s' % url)
-            for k,v in headers.iteritems():
-                self._logger.debug('h> %s: %s' % (k,v))
-            for k,v in data.iteritems():
-                self._logger.debug('d> %s=%s' % (k,v))
+            for k, v in headers.iteritems():
+                self._logger.debug('h> %s: %s' % (k, v))
+            for k, v in data.iteritems():
+                self._logger.debug('d> %s=%s' % (k, v))
         data = urllib.urlencode(data)
         req = urllib2.Request(url, data, headers)
         return self._opener.open(req)
