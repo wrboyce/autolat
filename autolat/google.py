@@ -168,8 +168,15 @@ class LocateFriends(GoogleAction):
 class UpdateAction(GoogleAction, MobileMeAction):
     keyword = 'update'
 
+    def __init__(self, *args, **kwargs):
+        super(UpdateAction, self).__init__(*args, **kwargs)
+        self.parser.add_argument('dev_id', help='MobileMe device id to update latitude with', metavar='DEVICE_ID', nargs='?', default=None)
+
     def main(self):
         g = Google(self.args.g_user, self.args.g_pass)
         m = MobileMe(self.args.m_user, self.args.m_pass)
-        l = m.locate_device()
+        if self.args.dev_id:
+            l = m.locate_device(self.args.dev_id)
+        else:
+            l = m.locate_device()
         g.update_latitude(timestamp=l.timestamp, latitude=l.latitude, longitude=l.longitude, accuracy=l.accuracy)
