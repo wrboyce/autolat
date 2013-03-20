@@ -9,20 +9,20 @@ from webservice import WebService
 
 
 class Google(WebService):
-    loginform_url = 'https://www.google.com/accounts/ServiceLogin'
+    loginform_url = 'https://accounts.google.com/ServiceLogin'
     loginform_data = {
         'service': 'friendview',
         'hl': 'en',
         'nui': '1',
-        'continue': 'http://maps.google.com/maps/m?mode=latitude',
+        'continue': 'https://latitude.google.com/latitude/b/0',
     }
     loginform_id = 'gaia_loginform'
     loginform_user_field = 'Email'
     loginform_pass_field = 'Passwd'
     loginform_persist_field = 'PersistentCookie'
 
-    def _js_post(self, url, data={}, headers={}):
-        headers.update({'X-ManualHeader': 'true'})
+    def _js_post(self, url, data, headers={}):
+        headers.update({'X-Manualheader': self.xmanualheader})
         return super(Google, self)._post(url, data, headers)
 
     def update_latitude(self, timestamp, latitude, longitude, accuracy):
@@ -58,18 +58,11 @@ class Google(WebService):
         return Location.history_from_kml(kml)
 
     def locate_friends(self):
-        data = {
-            'gpsc': 'false',
-            'mwmct': 'iphone',
-            'mwmcv': '5.8',
-            'mwmdt': 'iphone',
-            'mwmdv': '30000',
-            't': 'fs',
-        }
+        data = '[null,null,null,null,null,true]'
         self._logger.info("Locating friends...")
-        resp = self._js_post('http://maps.google.com/glm/mmap/mwmfr', data).read().replace('\n', '')
+        resp = self._js_post('https://latitude.google.com/latitude/b/0/apps/pvjson?t=4', data).read().replace('\n', '')
         friends = []
-        rx = re.compile('\[,\[,"-?\d+",3,1,1,,0\],"(?P<email>[^"]+)","(?P<name>[^"]+)",(?P<phone>[^,]*),(?P<lat>-?\d+),(?P<lon>-?\d+),"(?P<timestamp>\d{10})\d{3}",(?P<accuracy>\d*),\["(?P<address>[^"]*)","(?P<city_state>[^"]*)"]')
+        rx = re.compile('"(?P<email>[^"]+)","(?P<name>[^"]+)",(?P<phone>[^,]+),(?P<lat>-?\d+),(?P<lon>-?\d+),"(?P<timestamp>\d+)",(?P<accuracy>\d+),\["(?P<address>[^"]*)","(?P<city_state>[^"]*)"]')
         for friend in rx.findall(resp):
             self._logger.debug('Found friend "%s"' % friend[1])
             friends.append({

@@ -2,6 +2,7 @@ import cookielib
 import logging
 import urllib
 import urllib2
+import re
 
 import BeautifulSoup as beautifulsoup
 
@@ -32,7 +33,9 @@ class WebService(object):
         self._cookiejar = CookieJar()
         self._opener = urllib2.build_opener(urllib2.HTTPCookieProcessor(self._cookiejar))
         self._user = user
-        self._auth(passwd)
+        resp = self._auth(passwd)
+        html = resp.read()
+        self.xmanualheader = re.search("XsrfToken.*'(.*)'", html).group(1)
 
     def __str__(self):
         return '%s: %s' % (self.__class__.__name__, self._user)
@@ -63,7 +66,8 @@ class WebService(object):
                 self._logger.debug('h> %s: %s' % (k, v))
             for k, v in data.iteritems():
                 self._logger.debug('d> %s=%s' % (k, v))
-        data = urllib.urlencode(data)
+        if isinstance(data, dict):
+            data = urllib.urlencode(self.encoded_dict(data))
         req = urllib2.Request(url, data, headers)
         return self._opener.open(req)
 
@@ -79,3 +83,14 @@ class WebService(object):
         for el in form.findAll('input', {'type': 'hidden'}):
             data[el['name']] = el['value']
         return self._post(form['action'], data)
+
+    def encoded_dict(self, in_dict):
+        out_dict = {}
+        for k, v in in_dict.iteritems():
+            if isinstance(v, unicode):
+                v = v.encode('utf8')
+            elif isinstance(v, str):
+                # Must be encoded in UTF-8
+                v.decode('utf8')
+            out_dict[k] = v
+        return out_dict
